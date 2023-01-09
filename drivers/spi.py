@@ -13,7 +13,7 @@ the SPI endpoint's protocol.
 """
 
 import sys
-from RPi import GPIO
+#from RPi import GPIO
 
 _CONFIGURATIONS = 0
 
