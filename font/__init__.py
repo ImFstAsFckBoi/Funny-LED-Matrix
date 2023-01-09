@@ -56,5 +56,5 @@ def get_symbol_line(char: str,
         matrix_line = char_line
 
     cmd = __lazy_column_lut[matrix_line]
-    cmd += font[char][char_line - 1]
+    cmd += get_symbol(char, font)[char_line - 1]
     return int(cmd, 2)
