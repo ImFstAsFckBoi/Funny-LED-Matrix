@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 """
 TAKEN FROM: https://github.com/glennklockwood/raspberrypi
 
@@ -13,9 +14,10 @@ the SPI endpoint's protocol.
 """
 
 import sys
-from RPi import GPIO
+from RPi import GPIO  # type: ignore
 
 _CONFIGURATIONS = 0
+
 
 class SPI(object):
     def __init__(self, clk, cs, mosi, miso, verbose=False):
@@ -30,7 +32,7 @@ class SPI(object):
         else:
             self.verbose = False
         GPIO.setmode(GPIO.BCM)
-        ### sometimes you don't need an input or an output, so they're optional
+        # sometimes you don't need an input or an output, so they're optional
         if self.mosi:
             GPIO.setup(self.mosi, GPIO.OUT, initial=GPIO.LOW)
         if self.miso:
@@ -48,18 +50,18 @@ class SPI(object):
         _CONFIGURATIONS -= 1
         if _CONFIGURATIONS == 0:
             GPIO.cleanup()
-    
+
     def clk_tick(self):
-#       self._vprint("Setting CLK high, then low")
+        self._vprint("Setting CLK high, then low")
         GPIO.output(self.clk, GPIO.HIGH)
         GPIO.output(self.clk, GPIO.LOW)
 
     def cs_low(self):
-#       self._vprint("Pulling CS low")
+        self._vprint("Pulling CS low")
         GPIO.output(self.cs, GPIO.LOW)
 
     def cs_high(self):
-#       self._vprint("Pulling CS high")
+        self._vprint("Pulling CS high")
         GPIO.output(self.cs, GPIO.HIGH)
 
     def put(self, data, bits, control_cs=True):
@@ -79,7 +81,7 @@ class SPI(object):
                 data_buf <<= 1
                 self.clk_tick()
             self._vprint("Sent [%s]" % packet)
-        except:
+        except:  # noqa
             if control_cs:
                 self.cs_high()
             raise
@@ -104,7 +106,7 @@ class SPI(object):
                 else:
                     packet += "0"
             self._vprint("Recv [%s]" % packet)
-        except:
+        except:  # noqa 
             if control_cs:
                 self.cs_high()
             raise
@@ -115,7 +117,7 @@ class SPI(object):
 
     def put_get(self, data, bits):
         """Put and get bit vectors concurrently"""
-        put_data = data 
+        put_data = data
         get_data = 0x0
         put_packet = ""
         get_packet = ""
@@ -138,13 +140,12 @@ class SPI(object):
                     get_packet += "0"
             self._vprint("Sent [%s]" % put_packet)
             self._vprint("Recv [%s]" % get_packet)
-        except:
+        except:  # noqa
             self.cs_high()
             raise
 
         self.cs_high()
         return get_data
-
 
     def _vprint(self, msg):
         """print messages only when debugging is enabled"""
