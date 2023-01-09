@@ -1,8 +1,6 @@
 from font.basic import basic_font
+from font.types import font_t, symbol_t
 
-line_t = str
-symbol_t = list[line_t]
-font_t = dict[str, symbol_t]
 
 __lazy_column_lut = {
     1: "0001",

@@ -1,6 +1,6 @@
 """Basic Minecraft inspired 7x5 font
 """
-from font import font_t
+from font.types import font_t
 
 basic_font: font_t = {
     "__DEFAULT__": [
