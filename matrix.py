@@ -17,7 +17,7 @@ def msg_slice(msg: str, n: int) -> tuple[str, int]:
 
 
 def main(conn: max7219cng):
-    msg = ' BALD '
+    msg = f' {input("Your Message: ")} '
     for msg_line in range(6 * (len(msg) - 1)):
         for matrix_line in range(1, 8):
             a = msg_slice(msg, msg_line + matrix_line)
