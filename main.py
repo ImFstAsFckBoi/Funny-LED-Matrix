@@ -17,11 +17,11 @@ PUA_UPPER = 0xF8FF
 ESRT_COUNTER = PUA_LOWER
 
 
-def replace_escape_sequence(msg: str, idx: int):
+def replace_escape_sequence(msg: str, idx: int) -> str:
     global ESRT_COUNTER
     sequence = ''
 
-    for i in msg[idx:]:
+    for i in msg[idx + 1:]:
         if i == '\\':
             break
 
@@ -32,16 +32,19 @@ def replace_escape_sequence(msg: str, idx: int):
     msg = msg.replace(f'\\{sequence}\\', chr(ESRT_COUNTER))
     ESRT[ESRT_COUNTER] = sequence
     ESRT_COUNTER += 1
+    return msg
 
 
-def preprocess_escape_sequences(msg: str):
+def preprocess_escape_sequences(msg: str) -> str:
     while True:
         for idx in range(len(msg)):
             if msg[idx] == '\\':
-                replace_escape_sequence(msg, idx)
+                msg = replace_escape_sequence(msg, idx)
                 break
         else:
             break
+    
+    return msg
 
 
 def msg_slice(msg: str, n: int) -> tuple[str, int]:
@@ -55,12 +58,12 @@ def msg_slice(msg: str, n: int) -> tuple[str, int]:
 
 def main(conn: max7219cng):
     msg = f' {input("Your Message: ")} '
-    preprocess_escape_sequences(msg)
+    msg = preprocess_escape_sequences(msg)
     for msg_line in range(6 * (len(msg) - 1)):
         for matrix_line in range(1, 8):
             c_l_tuple = msg_slice(msg, msg_line + matrix_line)
 
-            if ord(c_l_tuple[0]) >= PUA_LOWER or ord(c_l_tuple[0]) <= PUA_UPPER:  # noqa
+            if ord(c_l_tuple[0]) >= PUA_LOWER and ord(c_l_tuple[0]) <= PUA_UPPER:  # noqa
                 char = f'__{ESRT[ord(c_l_tuple[0])]}__'
             else:
                 char = c_l_tuple[0]
