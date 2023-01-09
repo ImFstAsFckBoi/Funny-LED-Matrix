@@ -24,7 +24,7 @@ def get_symbol(char: str, font: font_t = basic_font) -> symbol_t:
 
     try:
         return font[char]
-    except IndexError:
+    except KeyError:
         return font['__DEFAULT__']
 
 
