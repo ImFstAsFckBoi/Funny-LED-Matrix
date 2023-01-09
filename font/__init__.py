@@ -1,6 +1,6 @@
 from font.basic import basic_font
 from font.types import font_t, symbol_t
-
+from typing import Union
 
 __lazy_column_lut = {
     1: "0001",
@@ -30,7 +30,7 @@ def get_symbol(char: str, font: font_t = basic_font) -> symbol_t:
 
 def get_symbol_line(char: str,
                     char_line: int,
-                    matrix_line: int | None = None,
+                    matrix_line: Union[int, None] = None,  # int | None = None, requires python3.10 # noqa
                     font: font_t = basic_font) -> int:
 
     """Get the matrix print command for one line in a symbol.
