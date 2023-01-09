@@ -43,6 +43,8 @@ if __name__ == '__main__':
             elif r == 2:
                 test(matrix)
                 break
+            elif r == 3:
+                break
 
     except KeyboardInterrupt:
         pass
