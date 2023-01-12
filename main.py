@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from drivers.max7219cng import max7219cng
-from font import get_symbol_line, get_symbol, symbol_t
+from font import get_symbol_line, get_symbol
 from time import sleep
 
 ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ"
@@ -33,7 +33,7 @@ def replace_escape_sequence(msg: str, idx: int) -> str:
         return '\\'
 
     sequence = rev_sequence[::-1]
-    
+
     msg = msg.replace(f'\\{sequence}\\', chr(ESRT_COUNTER))
     ESRT[ESRT_COUNTER] = sequence
     ESRT_COUNTER += 1
@@ -48,15 +48,14 @@ def preprocess_escape_sequences(msg: str) -> str:
                 break
         else:
             break
-    
+
     return msg
 
 
 def escape_char(char: str) -> str:
-    
     if ord(char) >= PUA_LOWER and ord(char) <= PUA_UPPER:  # noqa
         return f'__{ESRT[ord(char)]}__'
-    
+
     return char
 
 
@@ -64,19 +63,19 @@ def remove_rename(code: int) -> None:
     global ESRT_COUNTER
     if code != ESRT_COUNTER:
         raise Exception('Escape sequence were handled incorrectly')
-    
+
     ESRT_COUNTER -= 1
 
 
 def preprocess_slice_message(msg: str) -> list[tuple[str, int]]:
     msg_layout: list[tuple[str, int]] = []
-    
+
     for char in msg:
         for idx in range(1, get_symbol(escape_char(char)).width + 1):
             msg_layout.append((char, idx))
-        
+
         msg_layout.append((' ', 1))
-        
+
     return msg_layout
 
 
@@ -95,6 +94,7 @@ def main(conn: max7219cng):
     for i in range(ESRT_COUNTER - 1, PUA_LOWER, -1):
         remove_rename(i)
 
+
 def test(conn: max7219cng):
     conn.test(3)
 
@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
         r = 0
         while True:
-            r = int(input("1: Run)  2: Test) 3: Quit)\n> "))
+            r = int(input("1: Run)  2: Test) 3: Quit)\n> "), 10)
 
             if r == 1:
                 main(matrix)
