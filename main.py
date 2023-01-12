@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from drivers.max7219cng import max7219cng
-from font import get_symbol_line
+from font import get_symbol_line, get_symbol, symbol_t
 from time import sleep
 
 ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ"
@@ -19,16 +19,21 @@ ESRT_COUNTER = PUA_LOWER
 
 def replace_escape_sequence(msg: str, idx: int) -> str:
     global ESRT_COUNTER
-    sequence = ''
+    rev_sequence = ''
 
-    for i in msg[idx + 1:]:
+    for i in reversed(msg[:idx]):
         if i == '\\':
             break
 
-        sequence += i
+        rev_sequence += i
     else:
-        raise Exception(f'Escape sequence at index {idx} is never closed.')
+        raise Exception(f'Escape rev_sequence at index {idx} is never closed.')
 
+    if len(rev_sequence) == 0:
+        return '\\'
+
+    sequence = rev_sequence[::-1]
+    
     msg = msg.replace(f'\\{sequence}\\', chr(ESRT_COUNTER))
     ESRT[ESRT_COUNTER] = sequence
     ESRT_COUNTER += 1
@@ -37,7 +42,7 @@ def replace_escape_sequence(msg: str, idx: int) -> str:
 
 def preprocess_escape_sequences(msg: str) -> str:
     while True:
-        for idx in range(len(msg)):
+        for idx in range(len(msg) - 1, 0, -1):
             if msg[idx] == '\\':
                 msg = replace_escape_sequence(msg, idx)
                 break
@@ -47,29 +52,48 @@ def preprocess_escape_sequences(msg: str) -> str:
     return msg
 
 
-def msg_slice(msg: str, n: int) -> tuple[str, int]:
-    idx = 0
-    while n > 6:
-        n = n - 6
-        idx += 1
+def escape_char(char: str) -> str:
+    
+    if ord(char) >= PUA_LOWER and ord(char) <= PUA_UPPER:  # noqa
+        return f'__{ESRT[ord(char)]}__'
+    
+    return char
 
-    return (msg[idx], n)
+
+def remove_rename(code: int) -> None:
+    global ESRT_COUNTER
+    if code != ESRT_COUNTER:
+        raise Exception('Escape sequence were handled incorrectly')
+    
+    ESRT_COUNTER -= 1
+
+
+def preprocess_slice_message(msg: str) -> list[tuple[str, int]]:
+    msg_layout: list[tuple[str, int]] = []
+    
+    for char in msg:
+        for idx in range(1, get_symbol(escape_char(char)).width + 1):
+            msg_layout.append((char, idx))
+        
+        msg_layout.append((' ', 1))
+        
+    return msg_layout
 
 
 def main(conn: max7219cng):
-    msg = f' {input("Your Message: ")} '
+    msg = f'   {input("Your Message: ")}   '
     msg = preprocess_escape_sequences(msg)
-    for msg_line in range(6 * (len(msg) - 1)):
-        for matrix_line in range(1, 8):
-            c_l_tuple = msg_slice(msg, msg_line + matrix_line)
+    layout = preprocess_slice_message(msg)
+    for msg_line in range(len(layout) - 8):
+        for matrix_line in range(8):
+            c_l_tuple = layout[msg_line + matrix_line]
 
-            if ord(c_l_tuple[0]) >= PUA_LOWER and ord(c_l_tuple[0]) <= PUA_UPPER:  # noqa
-                char = f'__{ESRT[ord(c_l_tuple[0])]}__'
-            else:
-                char = c_l_tuple[0]
-            conn.write(get_symbol_line(char, c_l_tuple[1], matrix_line))
-        sleep(0.2)
+            char = escape_char(c_l_tuple[0])
+            conn.write(get_symbol_line(char, c_l_tuple[1], matrix_line + 1))
+        sleep(0.1)
 
+    for i in range(ESRT_COUNTER - 1, PUA_LOWER, -1):
+        remove_rename(i)
 
 def test(conn: max7219cng):
     conn.test(3)
@@ -77,7 +101,7 @@ def test(conn: max7219cng):
 
 if __name__ == '__main__':
     try:
-        matrix = max7219cng(clk=21, cs=16, mosi=20)
+        matrix = max7219cng(clk=16, cs=20, mosi=21)
 
         r = 0
         while True:
