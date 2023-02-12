@@ -2,7 +2,9 @@
     "python.analysis.typeCheckingMode": "basic",
     "cSpell.words": [
         "ESRT",
+        "lpadding",
         "mosi",
+        "rpadding",
         "vprint"
     ]
 }
