@@ -1,4 +1,4 @@
-"""Basic Minecraft inspired 7x5 font
+"""Basic Minecraft inspired font
 """
 from font.types import font_t
 from font.types import symbol_t

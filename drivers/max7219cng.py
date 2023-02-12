@@ -15,12 +15,12 @@ class max7219cng():
         """Init connection max7219cng unit.
 
         Args:
-            clk (int): GPIO pin to use at clock.
-            cs (int): GPIO pin to use as chip select.
-            mosi (int): GPIO pin to use as MOSI / DIN (Data In)
-            scan_limit (int, optional): Number of columns to enable.
+            `clk` (int): GPIO pin to use at clock.
+            `cs` (int): GPIO pin to use as chip select.
+            `mosi` (int): GPIO pin to use as MOSI / DIN (Data In)
+            `scan_limit` (int, optional): Number of columns to enable.
             Defaults to 7 (all).
-            verbose (bool, optional): Enable verbose logging to stdout.
+            `verbose` (bool, optional): Enable verbose logging to stdout.
             Defaults to False.
         """
         self.__spi_conn = SPI(clk=clk,
@@ -48,13 +48,14 @@ class max7219cng():
         """Write a packet to the unit.
 
         Args:
-            packet (int): 12 bit integer representing the packet.
+            `packet` (int): 12 LSBs of an integer representing the packet.
 
         Raises:
-            IndexError: To large to be a valid packet (more than 12 bits).
+            IndexError: To large to be a valid packet (more than 12 bits set).
         """
-        if packet > 4095:  # 4095 = b'1111 1111 1111' (max number with 12 bits)
-            raise IndexError('Packet must be 12 bits long.')
+        # 4095 = 0b_1111_1111_1111 (max number with 12 LSB set)
+        if packet > 4095:
+            raise IndexError('Packets set bits must be 12 bits long.')
 
         self.__spi_conn.put(packet, 12)
 
@@ -62,7 +63,7 @@ class max7219cng():
         """Write a packet represented as a string of 12 1:s and 0:s.
 
         Args:
-            string (str): 12 1:s and 0:s to send.
+            `string` (str): 12 bits (1:s and 0:s) to send.
 
         Raises:
             IndexError: To long string (> 12).
