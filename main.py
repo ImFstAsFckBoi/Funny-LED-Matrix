@@ -2,7 +2,7 @@
 
 from drivers.max7219cng import max7219cng
 from lib import print2matrix
-
+from font.basic import basic_font
 
 if __name__ == '__main__':
     try:
@@ -15,13 +15,13 @@ if __name__ == '__main__':
             except ValueError:
                 continue
             if mode == 1:
-                print2matrix(input('Your message: '), matrix)
+                print2matrix(input('Your message: '), matrix, font=basic_font)
                 break
             elif mode == 2:
                 msg = input('Your message: ')
                 print('Ctrl + C to stop')
                 while True:
-                    print2matrix(msg, matrix, lpadding=2, rpadding=2)
+                    print2matrix(msg, matrix, font=basic_font)
             elif mode == 3:
                 matrix.test(3)
                 break

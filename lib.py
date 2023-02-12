@@ -3,6 +3,8 @@
 
 from drivers.max7219cng import max7219cng
 from font import get_symbol_line, get_symbol
+from font.types import font_t
+from font.basic import basic_font
 from time import sleep
 
 # Escape Sequence Renaming Table
@@ -74,19 +76,23 @@ def __remove_rename(code: int) -> None:
     __ESRT_COUNTER -= 1
 
 
-def __preprocess_slice_message(msg: str) -> list[tuple[str, int]]:
+def __preprocess_slice_message(msg: str,
+                               font: font_t = basic_font
+                               ) -> list[tuple[str, int]]:
+
     """Convert a string into a sequence of tuples containing
     (<character>, <line of character>) to be used as print instruction.
 
     Args:
         `msg` (str): String to convert.
+        `font` (font_t, optional): The font to use. Default to basic
     Returns:
         list[tuple[str, int]]: Sequence of print instructions.
     """
     msg_layout: list[tuple[str, int]] = []
 
     for char in msg:
-        for idx in range(1, get_symbol(__escape_char(char)).width + 1):
+        for idx in range(1, get_symbol(__escape_char(char), font).width + 1):
             msg_layout.append((char, idx))
 
         msg_layout.append((' ', 1))
@@ -95,14 +101,16 @@ def __preprocess_slice_message(msg: str) -> list[tuple[str, int]]:
 
 
 def print2matrix(msg: str, matrix: max7219cng,
+                 font: font_t = basic_font,
                  sleep_time: float = 0.1,
-                 lpadding: int = 3,
-                 rpadding: int = 3):
+                 lpadding: int = 2,
+                 rpadding: int = 2):
     """Print scrolling text to max7219cng LED matrix.
 
     Args:
         `msg` (str): String to print.
         `matrix` (max7219cng): Driver object to print to.
+        `font` (font_t, optional): The font to use. Default to basic
         `sleep_time` (float, optional): Sleeping time between instructions,
         Lower = Faster. Defaults to 0.1.
         `lpadding` (int, optional): Space padding before message,
@@ -119,14 +127,14 @@ def print2matrix(msg: str, matrix: max7219cng,
         print('Incorrectly formatted sequence')
         return
 
-    layout = __preprocess_slice_message(msg)
+    layout = __preprocess_slice_message(msg, font)
 
     for msg_line in range(len(layout) - 8):
         for matrix_line in range(8):
             char, line = layout[msg_line + matrix_line]
 
             char = __escape_char(char)
-            matrix.write(get_symbol_line(char, line, matrix_line + 1))
+            matrix.write(get_symbol_line(char, line, matrix_line + 1, font))
         sleep(sleep_time)
 
     for i in range(__ESRT_COUNTER - 1, __PUA_LOWER, -1):
